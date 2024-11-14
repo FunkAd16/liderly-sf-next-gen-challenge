@@ -88,6 +88,7 @@ Dados los requerimientos de limitación de ciertos campos y los valores a introd
   - Si es para enviar un correo:
     - Se genera el correo y se envía a la dirección email indicada
     - Se inserta a la Quote
+  - En la página de Visualforce se evalúa si la forma de pago será a contado o mensualidades, arrojando sus montos y fechas correspondientes.
 ## Extras
 - Se renombaron las Tabs y Labels de los objetos utilizados para mejor comprensión (en idioma Español México)
 - Se modificaron las Record Pages y los Page Layouts de los objetos para mejor entendimiento para la creación de records de cada uno de éstos
