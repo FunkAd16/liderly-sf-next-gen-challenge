@@ -1,0 +1,80 @@
+public class QuotePageController {
+    public Quote Quote { get; set; }
+    public Boolean previewOnly { get; set; }
+    public Boolean approved { get; set; }
+    public QuoteLineItem quoteLineItems { get; set; }
+            
+    public QuotePageController(ApexPages.StandardController controller){
+        this.quote = (Quote) controller.getRecord();
+        this.quoteLineItems = [SELECT Product2.Name, UnitPrice, Quantity, Subtotal, Mensualidades__c, Formula_Materias__c, Total_Descuentos__c, Costo_Total__c
+                              FROM QuoteLineItem
+                              WHERE QuoteId=:quote.Id LIMIT 1];
+    }
+
+    @InvocableMethod(label='Email Invoice PDF' description='Generates and Emails an Invoice PDF')
+    public static List<generatePDFReturnVars> generatePDF(List<generatePDFParams> pdfParamList){
+        List<generatePDFReturnVars> returnVarsWrapper = new List<generatePDFReturnVars>();
+        
+        for(generatePDFParams pdfParams : pdfParamList){
+            String url = 'apex/NormalQuote?';
+            String parameters = 'Id=' + pdfParams.recordId +
+                				'&previewOnly=' + pdfParams.previewOnly;
+            PageReference invoicePDF = new PageReference('/' + url + parameters);
+        
+            if(!pdfParams.previewOnly && pdfParams.approved){
+                emailPDF(invoicePDF, pdfParams);
+                attachPDF(invoicePDF, pdfParams);
+            }
+            generatePDFReturnVars returnVars = new generatePDFReturnVars();
+            returnVars.url = url + parameters;
+            
+            returnVarsWrapper.add(returnVars);
+        }
+        
+        return returnVarsWrapper;
+    }
+    
+    private static void emailPDF(PageReference invoicePDF, generatePDFParams pdfParams){
+        Messaging.EmailFileAttachment attachment = new Messaging.EmailFileAttachment();
+        
+        attachment.setContentType('application/pdf');
+        attachment.setFileName('Invoice PDF.pdf');
+        attachment.body = invoicePDF.getContentAsPDF();
+        attachment.setInline(false);
+        
+        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        
+        mail.setToAddresses(new String[] {pdfParams.email});       
+        mail.setSubject('Invoice PDF');
+        mail.setHtmlBody('Here\'s the Invoice PDF you requested.');
+        mail.setFileAttachments(new Messaging.EmailFileAttachment[] { attachment });
+        
+        Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+    }
+    
+    private static void attachPDF(PageReference invoicePDF, generatePDFParams pdfParams){
+        Attachment attachment = new Attachment();
+        
+       	attachment.Body = invoicePDF.getContentAsPdf();
+        attachment.Name = 'invoicePDF--'+Datetime.now()+'.pdf';
+        attachment.ParentId = pdfParams.recordId;
+        
+        insert attachment;
+    }
+    
+    public class generatePDFParams {
+        @invocableVariable(label='Preview only' description='Preview Only' required=false)
+        public boolean previewOnly;
+        @invocableVariable(label='Approved' description='Quote Approved' required=false)
+        public boolean approved;
+        @invocableVariable(label='Email' description='Email input field result' required=false)
+        public String email;
+        @invocableVariable(label='RecordId' description='Record Id' required=true)
+        public String recordId;
+    }
+    
+    public class generatePDFReturnVars {
+        @invocableVariable(label='Preview PDF URL' description='Preview PDF URL' required=false)
+        public String url;
+    }
+}
