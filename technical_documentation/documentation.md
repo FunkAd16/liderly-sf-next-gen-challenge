@@ -70,6 +70,21 @@ Dados los requerimientos de limitación de ciertos campos y los valores a introd
 ### Screen Flow: Generate Invoice PDF
   - Este Screen Flow fue insertado en la Record Page de Quote para facilitar su uso.
 - Solicitar un email u ofrecer la opción de usar el email del account o solo visualizar la cotización a generar
-- Si la Quote fue aprobada por el Approval Process, el PDF podrá ser generado y enviado a la dirección email señalada (ya sea input o del Email Account)
+- Si la Quote fue aprobada por el Approval Process, el PDF podrá ser generado, importado como documento mismo de la Quote y enviado a la dirección email señalada (ya sea input o del Email Account)
 - Si la Quote no ha pasado por un Approval Process o fue rechazada, solo podrá ser previsualizada (activando el checkbox correspondiente)
 - Si la Account no tiene email y se mandó a utilizar éste, o si la quote no cumple con los requisitos previamente mencionados, se mostrará una pantalla de error señalando el posible error.
+- Se le envían 4 parámetros al controller extension de la página de Visualforce:
+  - String: Quote Record ID
+  - Boolean: Approved (Si la Quote ha sido aprobada o no)
+  - String: Email (ya sea por input o el de la Account)
+  - Boolean: Preview Only (si solo se busca previsualizar el pdf o no)
+- Se recibe de vuelta al Flow un parámetro:
+  - String: Preview URL (la dirección enlace para previsualizar el documento a generar)
+- Por medio de una página de Visualforce con un Standard Controller a Quote y un Controller Extension, y gracias a los recursos recomendados por Liderly, se desarrolló la lógica donde:
+  - Se reciben los 4 parámetros del Flow por medio de @invocableVariable's
+  - Se hace un query a los Quote Line Items (if bulk) para crear adecuadamente la cotización con la orden correspondiente
+  - En un @invocableMethod se reciben los parámetros y se llama la página de visualforce para, de cualquier manera, crear el documento
+  - Se evalúa si solo será para previsualizar o, si es para enviar correo, se evalue si ha sido aprobado el Quote o no y se envía de vuelta al flow el URL para previsualizar el documento
+  - Si es para enviar un correo:
+    - Se genera el correo y se envía a la dirección email indicada
+    - Se inserta a la Quote
