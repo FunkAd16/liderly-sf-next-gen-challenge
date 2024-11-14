@@ -1,0 +1,156 @@
+<apex:page standardController="Quote" extensions="QuotePageController" showHeader="false" applyHtmlTag="false" renderAs="PDF">
+    <html>
+        <style>
+            .heading {
+                font-weight:bold;
+            }
+            .heading--main {
+                font-size: 36px;
+            }
+            .heading--main2 {
+                font-size: 28px;
+            }
+            .heading--sub {
+                font-size: 21px;
+            }
+            .column-container {
+                overflow:hidden;
+                width: 100%;
+            }
+            .column {
+                width: 48%; /* Width slightly less than 50% to add space between columns */
+                float: left;
+                padding: 10px;
+                box-sizing: border-box;
+            }
+            /* Clear fix for floated columns */
+            .clearfix::after {
+                content: "";
+                clear: both;
+                display: table;
+            }
+        </style>
+        
+        <body>
+            <center>
+                <h1 class="heading heading--main">Universidad Learning Force</h1>
+                <h2 class="heading heading--main2">Inscripción</h2>
+            </center>
+            
+            <div class="box--half">
+                <span>Fecha:</span>
+                <span>{!Quote.CreatedDate}</span>
+            </div>
+            
+            <div class="box--half">
+                <span>Folio:</span>
+                <span>{!Quote.QuoteNumber}</span>
+            </div>
+            
+            <!-- Account and Student Information -->
+            <div class="box--half">
+                <h2 class="heading heading--sub">Informacion del Alumno</h2>
+                <span>Nombre:</span>
+                <span>{!Quote.Account.Name}</span>
+                <br/>
+                <span>Matrícula:</span>
+                <span>{!Quote.Account.Matricula__c}</span>
+                <br/>
+                <span>Estado de residencia:</span>
+                <span>{!Quote.Account.Estado__c}</span>
+                <br/>
+                <span>Campus:</span>
+                <span>{!Quote.Pricebook2.Name}</span>
+                <br/>
+                <span>Promedio:</span>
+                <span>{!Quote.Account.Promedio__c}</span>
+            </div>
+            
+            <!-- Product Table -->
+            <h2 class="heading heading--sub">Conceptos de Cobro</h2>
+            <div class="box-full">
+                <span>Concepto:</span>
+                <span>{!quoteLineItems.Product2.Name}</span>
+                <br/>
+                <span>Costo por materia:</span>
+                <span>${!quoteLineItems.UnitPrice}</span>
+                <br/>
+                <span>Cantidad de materias:</span>
+                <span>{!quoteLineItems.Quantity}</span>
+                <br/>
+                <span>Subtotal previo descuento de cantidad de materias:</span>
+                <span>${!quoteLineItems.Subtotal}</span>
+            </div>
+            
+            <!-- Scholarships -->
+            <h2 class="heading heading--sub">Becas y Descuentos Aplicados</h2>
+            <ul>
+                <apex:outputText value="<li>Beca de Excelencia</li>" escape="false" rendered="{!Quote.Account.Beca_de_Excelencia__c}"/>
+                <apex:outputText value="<li>Beca Deportiva</li>" escape="false" rendered="{!Quote.Account.Beca_Deportiva__c}"/>
+                <apex:outputText value="<li>Beca por Familiares Docentes</li>" escape="false" rendered="{!Quote.Account.Beca_por_familiares_docentes__c}"/>
+                <apex:outputText value="<li>Beca por Necesidad Económica</li>" escape="false" rendered="{!Quote.Account.Beca_por_necesidad_economica__c}"/>
+                <apex:outputText value="<li>Pago a Contado" escape="false" rendered="{!Quote.Opportunity.Forma_de_Pago__c == 'Contado'}"/>
+            </ul>
+            
+            <!-- Summary Section -->
+            <div class="right-align">
+                <h2 class="heading heading--sub">Total</h2>
+                <div>
+                    <span>Subtotal después de descuento por cantidad de materias:</span>
+                    <span>${!quoteLineItems.Formula_Materias__c}</span>
+                </div>
+                <div>
+                    <span>Porcentaje total de becas y descuentos:</span>
+                    <span>{!quoteLineItems.Total_Descuentos__c} %</span>
+                </div>
+                <div>
+                    <span>Total a pagar:</span>
+                    <span>${!quoteLineItems.Costo_Total__c}</span>
+                </div>
+            </div>
+            
+            <!-- Payment -->
+            <h2 class="heading heading--sub">Plan de Pagos</h2>
+            <div class="box-full">
+                <span>Forma de pago:</span>
+                <span>{!Quote.Opportunity.Forma_de_Pago__c}</span>
+                <br/>
+            </div>       
+            <apex:outputPanel rendered="{!Quote.Opportunity.Forma_de_Pago__c == 'Contado'}">
+                <span>Fecha única de pago: 10 de Julio</span>
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{!Quote.Opportunity.Forma_de_Pago__c == 'Mensualidades'}">
+                <apex:outputPanel rendered="{!Quote.Opportunity.Periodo__c == 'Semestral'}">
+                    <span>Monto a pagar por parcialidad:</span>
+                    <span>${!quoteLineItems.Mensualidades__c}</span>
+                    <br/>
+                    <span>Parcialidad 1, vencimiento: 10 de Julio</span>
+                    <br/>
+                    <span>Parcialidad 2, vencimiento: 10 de Agosto</span>
+                    <br/>
+                    <span>Parcialidad 3, vencimiento: 10 de Septiembre</span>
+                    <br/>
+                    <span>Parcialidad 4, vencimiento: 10 de Octubre</span>
+                    <br/>
+                    <span>Parcialidad 5, vencimiento: 10 de Noviembre</span>
+                    <br/>
+                    <span>Parcialidad 6, vencimiento: 10 de Diciembre</span>
+                </apex:outputPanel>
+                
+                <apex:outputPanel rendered="{!Quote.Opportunity.Periodo__c == 'Cuatrimestral'}">
+                    <span>Monto a pagar por parcialidad:</span>
+                    <span>${!quoteLineItems.Mensualidades__c}</span>
+                    <br/>
+                    <span>Parcialidad 1, vencimiento: 10 de Julio</span>
+                    <br/>
+                    <span>Parcialidad 2, vencimiento: 10 de Agosto</span>
+                    <br/>
+                    <span>Parcialidad 3, vencimiento: 10 de Septiembre</span>
+                    <br/>
+                    <span>Parcialidad 4, vencimiento: 10 de Octubre</span>
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </body>
+    </html>
+</apex:page>
