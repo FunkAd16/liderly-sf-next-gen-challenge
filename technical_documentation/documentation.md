@@ -93,3 +93,4 @@ Dados los requerimientos de limitación de ciertos campos y los valores a introd
 - Se renombaron las Tabs y Labels de los objetos utilizados para mejor comprensión (en idioma Español México)
 - Se modificaron las Record Pages y los Page Layouts de los objetos para mejor entendimiento para la creación de records de cada uno de éstos
 - Se creó una Plantilla de Quote para poder usar la acción 'Create PDF' del objeto Quote
+- Se modificaron los items mostrados en el Navigation Menu de la Sales App
